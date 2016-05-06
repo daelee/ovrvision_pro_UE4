@@ -206,6 +206,15 @@ IMPLEMENT_MODULE(FOvrvisionPlugin, OvrvisionPlugin)
 void FOvrvisionPlugin::StartupModule()
 {
 	hLibrary = LoadLibrary(TEXT("ovrvision.dll"));
+	if (hLibrary == NULL)
+	{
+		FString ovrVisionPath = FPaths::ConvertRelativePathToFull(FPaths::Combine(*FPaths::GamePluginsDir(), TEXT("OvrvisionPlugin"), TEXT("Binaries"), TEXT("Win64"), TEXT("ovrvision.dll")));
+		if (FPaths::FileExists(*ovrVisionPath))
+		{
+			hLibrary = (HINSTANCE)FPlatformProcess::GetDllHandle(*ovrVisionPath);
+		}
+	}
+
 	if (hLibrary != NULL)
 	{
 		ovOpen = reinterpret_cast<ovOpen_ptr>(::GetProcAddress(hLibrary, "ovOpen"));
@@ -273,6 +282,10 @@ void FOvrvisionPlugin::StartupModule()
 	}
 	else
 	{
+
+		TCHAR buf[512];
+		GetCurrentDirectory(sizeof(buf)/ sizeof(buf[0]), buf);
+		int err = GetLastError();
 		::MessageBox(NULL, TEXT("ovrvision.dll load error!"), TEXT("ovrvision.dll load error!"), MB_OK);
 	}
 
